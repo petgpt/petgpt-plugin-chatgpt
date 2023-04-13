@@ -76,6 +76,35 @@ function bindEventListener(ctx: PetExpose) {
         });
         log(`[event] [plugin.${pluginName}.data] receive data:`, data)
     })
+    ctx.emitter.on(`plugin.${pluginName}.slot.push`, (newSlotData: any) => {
+        let slotDataList:[] = JSON.parse(newSlotData)
+        log(`receive newSlotData(type: ${typeof slotDataList})(len: ${slotDataList.length}):`, slotDataList)
+        for (let i = 0; i < slotDataList.length; i++) {
+            let slotData: any = slotDataList[i]
+            switch (slotData.type) {
+                case 'switch': {
+                    log(`${i}, switch value:`, slotData.value)
+                    ctx.db.set('enableChatContext', slotData.value)
+                    break;
+                }
+                case 'dialog': {
+                    slotData.value.forEach((diaItem: any) => {
+                        log(`${i}, dialog item:`, diaItem)
+                        ctx.db.set(diaItem.name, diaItem.value)
+                    })
+                    break;
+                }
+                case 'select': {
+                    log(`${i}, select value:`, slotData.value)
+                    ctx.db.set('selectTest', slotData.value)
+                    break;
+                }
+                case 'uploda': {break;}
+                default: {break;}
+            }
+
+        }
+    })
 }
 const config = (ctx: PetExpose) => [
     {
@@ -139,7 +168,7 @@ const config = (ctx: PetExpose) => [
         value: ctx.db.get('VITE_SOCKS_PROXY_PORT') || '',
     },
 ]
-const slotMenu: SlotMenu[] = [
+const slotMenu = (ctx: PetExpose): SlotMenu[] => [
     {
         slot: 1,
         name: "setting",
@@ -148,13 +177,13 @@ const slotMenu: SlotMenu[] = [
             child: [
                 {name: 'systemMessage', type: 'input', required: false,
                     message: 'The system message helps set the behavior of the assistant. 例如：You are a helpful assistant.',
-                    default: 'You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\n'},
+                    default: ctx.db.get('systemMessage') || 'You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\n'},
                 {name: 'temperature', type: 'input', required: false,
-                    message: '[0, 2], 默认1, 更低更精确，更高随机性增加.', default: 1},
+                    message: '[0, 2], 默认1, 更低更精确，更高随机性增加.', default: ctx.db.get('temperature') || 1},
                 {name: 'presence_penalty', type: 'input', required: false,
-                    message: '[-2.0, 2.0], 默认0, 数值越大，越鼓励生成input中没有的文本.', default: 0},
+                    message: '[-2.0, 2.0], 默认0, 数值越大，越鼓励生成input中没有的文本.', default: ctx.db.get('presence_penalty') || 0},
                 {name: 'frequency_penalty', type: 'input', required: false,
-                    message: '[-2.0, 2.0], 默认0, 数值越大，降低生成的文本的重复率，更容易生成新的东西', default: 0},
+                    message: '[-2.0, 2.0], 默认0, 数值越大，降低生成的文本的重复率，更容易生成新的东西', default: ctx.db.get('frequency_penalty') || 0},
             ]
         },
         description: "对话参数设置"
@@ -164,7 +193,7 @@ const slotMenu: SlotMenu[] = [
         name: 'enableChatContext',
         menu: {
             type: 'switch',
-            value: false
+            value: ctx.db.get('enableChatContext') || false
         },
         description: "是否开启上下文"
     },
@@ -176,7 +205,8 @@ const slotMenu: SlotMenu[] = [
             child: [
                 {name: 'label1', value: 'value1', type: 'select', required: false},
                 {name: 'label2', value: 'value2', type: 'select', required: false},
-            ]
+            ],
+            value: ctx.db.get('selectTest') || 'value1' // 如果没有的话，默认选择第一个标签
         },
         description: "selectTest"
     }

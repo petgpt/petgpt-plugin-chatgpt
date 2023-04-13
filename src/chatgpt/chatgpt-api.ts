@@ -485,9 +485,9 @@ export class ChatGPTAPI {
         });
     }
 
-    public getIds() {
-        return this._messageStore.getIds()
-    }
+    // public getIds() {
+    //     return this._messageStore.getIds()
+    // }
 
     protected async _defaultUpsertMessage(
         message: types.ChatMessage
