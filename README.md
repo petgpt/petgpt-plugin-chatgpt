@@ -1,2 +1,2 @@
-# petgpt-plugin-template
-petgpt-plugin-template
+# petgpt-plugin-chatgpt
+petgpt-plugin-chatgpt

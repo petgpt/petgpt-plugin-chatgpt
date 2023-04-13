@@ -1,5 +1,5 @@
 {
-  "name": "petgpt-plugin-template",
+  "name": "petgpt-plugin-chatgpt",
   "version": "0.0.2",
   "description": "plugin template for petgpt",
   "main": "dist/index.js",
@@ -15,9 +15,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/petgpt/petgpt-plugin-template"
+    "url": "https://github.com/petgpt/petgpt-plugin-chatgpt"
   },
-  "homepage": "https://github.com/petgpt/petgpt-plugin-template",
+  "homepage": "https://github.com/petgpt/petgpt-plugin-chatgpt",
   "scripts": {
     "build": "tsc",
     "pub": "yarn build && yarn publish"
