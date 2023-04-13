@@ -34,22 +34,30 @@ let completionParams: Partial<Omit<openai.CreateChatCompletionRequest, 'messages
     presence_penalty: 0, // [-2.0, 2.0], 默认0, 数值越大，越鼓励生成input中没有的文本
     frequency_penalty: 0 // [-2.0, 2.0], 默认0, 数值越大，降低生成的文本的重复率，更容易生成新的东西
 }
+
+function initChatParam(ctx: PetExpose) {
+    enableChatContext = ctx.db.get('enableChatContext') || false
+    systemMessage = ctx.db.get('systemMessage') || systemMessage
+
+    if (enableChatContext) {
+        options.parentMessageId = latestParentMessageId || ''
+    } else {
+        latestParentMessageId = options.parentMessageId
+        options.parentMessageId = ''
+    }
+}
+function initChatGPT(ctx: PetExpose) {
+    initEnv(ctx)
+    initChatParam(ctx)
+    initApi(completionParams)
+}
 function bindEventListener(ctx: PetExpose) {
     // 监听配置是否发生变化，如果有变化，通过赋予的db权限，获取新的值
     ctx.emitter.on(`plugin.${pluginName}.config.update`, (data: any) => {
         updateDB(ctx, data)
-        initEnv(ctx) // 更新内存中的配置信息
 
-        enableChatContext = data['enableChatContext'] || ctx.db.get('enableChatContext') || false
-        systemMessage = data['systemMessage'] || ctx.db.get('systemMessage') || systemMessage
-
-        if (enableChatContext) {
-            options.parentMessageId = latestParentMessageId || ''
-        } else {
-            latestParentMessageId = options.parentMessageId
-            options.parentMessageId = ''
-        }
-        initApi(completionParams)
+        // setting里的配置改变，需要重新初始化api
+        initChatGPT(ctx)
         log(`[event] [plugin.${pluginName}.config.update] receive data:`, data)
     })
 
@@ -76,6 +84,8 @@ function bindEventListener(ctx: PetExpose) {
         });
         log(`[event] [plugin.${pluginName}.data] receive data:`, data)
     })
+
+    // 监听slot里的数据更新事件
     ctx.emitter.on(`plugin.${pluginName}.slot.push`, (newSlotData: any) => {
         let slotDataList:[] = JSON.parse(newSlotData)
         log(`receive newSlotData(type: ${typeof slotDataList})(len: ${slotDataList.length}):`, slotDataList)
@@ -104,6 +114,9 @@ function bindEventListener(ctx: PetExpose) {
             }
 
         }
+
+        // slot里的数据更新，不用重新初始化api，只需要更新对话参数
+        initChatParam(ctx)
     })
 }
 const config = (ctx: PetExpose) => [
@@ -213,7 +226,7 @@ const slotMenu = (ctx: PetExpose): SlotMenu[] => [
 ]
 export default (ctx: PetExpose): IPetPluginInterface => {
     const register = () => {
-        initEnv(ctx)
+        initChatGPT(ctx)
         bindEventListener(ctx)
         log(`[register]`)
     }
