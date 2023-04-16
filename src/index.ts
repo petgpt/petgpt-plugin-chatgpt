@@ -118,6 +118,12 @@ function bindEventListener(ctx: PetExpose) {
         // slot里的数据更新，不用重新初始化api，只需要更新对话参数
         initChatParam(ctx)
     })
+
+    // 监听clear事件
+    ctx.emitter.on(`plugin.${pluginName}.func.clear`, () => {
+        options.parentMessageId = '' // 清空parentMessageId，后面发起的请求找不到前面的对话，就是新的
+        log(`clear`)
+    })
 }
 const config = (ctx: PetExpose) => [
     {
