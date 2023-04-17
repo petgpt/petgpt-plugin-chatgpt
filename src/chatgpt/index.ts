@@ -115,7 +115,6 @@ export async function initApi(completionParams: Partial<Omit<openai.CreateChatCo
         api = new ChatGPTUnofficialProxyAPI({...options})
         apiModel = 'ChatGPTUnofficialProxyAPI'
     }
-    console.log(`chatgpt init success, api:`, api, ` apiModel:`, apiModel)
 }
 
 
@@ -124,9 +123,9 @@ export async function initApi(completionParams: Partial<Omit<openai.CreateChatCo
  * @param options 包含要发送的消息、上下文、进度回调函数、systemMessage
  */
 async function chatReplyProcess(options: RequestOptions) {
-    const { message, lastContext, process, systemMessage } = options
+    const { message, lastContext, process, systemMessage, abortSignal } = options
     try {
-        let options: SendMessageOptions = { timeoutMs }
+        let options: SendMessageOptions = { timeoutMs, abortSignal }
 
         if (apiModel === 'ChatGPTAPI') {
             if (isNotEmptyString(systemMessage))
