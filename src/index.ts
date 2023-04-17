@@ -263,9 +263,6 @@ export default (ctx: PetExpose): IPetPluginInterface => {
     }
 
     return {
-        name: `petgpt-plugin-${pluginName}`,
-        version: '0.0.1',
-        description: `${pluginName} plugin for petgpt.`,
         register,
         unregister,
         config,

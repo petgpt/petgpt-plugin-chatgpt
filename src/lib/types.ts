@@ -2,9 +2,6 @@
  * 定义插件有哪些功能
  */
 export interface IPetPluginInterface {
-    name: string
-    version: string
-    description: string
     register: () => void
     unregister: () => void
     config?: (ctx: PetExpose) => IPluginConfig[]
