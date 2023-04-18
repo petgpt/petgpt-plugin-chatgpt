@@ -1,9 +1,9 @@
 import {PetExpose, IPetPluginInterface, PluginData, SlotMenu} from './lib/types.js'
-import { log } from './lib/helper.js'
 import {ChatMessage, chatReplyProcess, initApi, initEnv} from "./chatgpt/index.js";
 import {openai} from "./chatgpt/types.js";
+import {Log} from "./lib/helper.js";
 
-
+let log: Log;
 let options = {
     parentMessageId: ''
 }
@@ -25,10 +25,10 @@ function updateDB(ctx: PetExpose, data: any) {
     // if(data['enableChatContext']) ctx.db.set('enableChatContext', data['enableChatContext'])
     // if(data['systemMessage']) ctx.db.set('systemMessage', data['systemMessage'])
     // if(data['VITE_OPENAI_API_KEY']) ctx.db.set('VITE_OPENAI_API_KEY', data['VITE_OPENAI_API_KEY'])
-    log(`data: ${ctx}`, data)
+    log.debug(`data: ${ctx}`, data)
     Object.keys(data).forEach((key) => {
         // if(data[key]) {
-            log(`set: key: `, key, ` to value: `, data[key])
+            log.debug(`set: key: `, key, ` to value: `, data[key])
             ctx.db.set(key, data[key])
         // }
     })
@@ -64,7 +64,7 @@ function bindEventListener(ctx: PetExpose) {
 
             // setting里的配置改变，需要重新初始化api
             initChatGPT(ctx)
-            // log(`[event] [plugin.${pluginName}.config.update] receive data:`, data)
+            // log.debug(`[event] [plugin.${pluginName}.config.update] receive data:`, data)
         })
     }
 
@@ -87,10 +87,10 @@ function bindEventListener(ctx: PetExpose) {
                         options.parentMessageId = chat.id // 如果开启着的，就把最新的parentMessageId携带上去
                     }
                     // let resMessage = JSON.stringify(chat, null, 2);
-                    // console.log(firstChunk ? resMessage : `\n${resMessage}`)
+                    // log.debug(firstChunk ? resMessage : `\n${resMessage}`)
                 }
             });
-            log(`[event] [plugin.${pluginName}.data] receive data:`, data)
+            log.debug(`[event] [plugin.${pluginName}.data] receive data:`, data)
         })
     }
 
@@ -98,24 +98,24 @@ function bindEventListener(ctx: PetExpose) {
         // 监听slot里的数据更新事件
         ctx.emitter.on(`plugin.${pluginName}.slot.push`, (newSlotData: any) => {
             let slotDataList:[] = JSON.parse(newSlotData)
-            // log(`receive newSlotData(type: ${typeof slotDataList})(len: ${slotDataList.length}):`, slotDataList)
+            // log.debug(`receive newSlotData(type: ${typeof slotDataList})(len: ${slotDataList.length}):`, slotDataList)
             for (let i = 0; i < slotDataList.length; i++) {
                 let slotData: any = slotDataList[i]
                 switch (slotData.type) {
                     case 'switch': {
-                        // log(`${i}, switch value:`, slotData.value)
+                        // log.debug(`${i}, switch value:`, slotData.value)
                         ctx.db.set('enableChatContext', slotData.value)
                         break;
                     }
                     case 'dialog': {
                         slotData.value.forEach((diaItem: any) => {
-                            // log(`${i}, dialog item:`, diaItem)
+                            // log.debug(`${i}, dialog item:`, diaItem)
                             ctx.db.set(diaItem.name, diaItem.value)
                         })
                         break;
                     }
                     case 'select': {
-                        // log(`${i}, select value:`, slotData.value)
+                        // log.debug(`${i}, select value:`, slotData.value)
                         ctx.db.set('selectTest', slotData.value)
                         break;
                     }
@@ -136,7 +136,8 @@ function bindEventListener(ctx: PetExpose) {
         ctx.emitter.on(`plugin.${pluginName}.func.clear`, () => {
             options.parentMessageId = '' // 清空parentMessageId，后面发起的请求找不到前面的对话，就是新的
             controller.abort()
-            log(`clear`)
+            controller = new AbortController();
+            log.debug(`clear`)
         })
     }
 }
@@ -249,9 +250,10 @@ const slotMenu = (ctx: PetExpose): SlotMenu[] => [
 ]
 export default (ctx: PetExpose): IPetPluginInterface => {
     const register = () => {
+        log = new Log(ctx)
         initChatGPT(ctx)
         bindEventListener(ctx)
-        log(`[register]`)
+        log.debug(`[register]`)
     }
 
     const unregister = () => {
@@ -259,7 +261,7 @@ export default (ctx: PetExpose): IPetPluginInterface => {
         ctx.emitter.removeAllListeners(`plugin.${pluginName}.data`)
         ctx.emitter.removeAllListeners(`plugin.${pluginName}.slot.push`)
         ctx.emitter.removeAllListeners(`plugin.${pluginName}.func.clear`)
-        log(`[unregister]`)
+        log.debug(`[unregister]`)
     }
 
     return {
@@ -269,10 +271,10 @@ export default (ctx: PetExpose): IPetPluginInterface => {
         slotMenu,
         handle: (data: PluginData) => new Promise(() => {
             ctx.emitter.emit(`plugin.${pluginName}.data`, data) // 转发给自己的listener
-            log('[handle]')
+            log.debug('[handle]')
         }),
         stop: () => new Promise((resolve, _) => {
-            log('[stop]')
+            log.debug('[stop]')
             controller.abort("stop generate manually")
             resolve()
         }),

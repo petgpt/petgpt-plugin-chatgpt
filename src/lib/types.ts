@@ -19,7 +19,7 @@ export interface PetExpose {
     baseDir: string
     emitter: IEventBus
     notify?: (title: string, body: string) => void
-    logger?: ILogger
+    logger: ILogger
 }
 
 /**
@@ -39,7 +39,10 @@ export interface IEventBus {
  * 暴露给plugin的logger能力
  */
 export interface ILogger{
-
+    info: (...msg: any[]) => void
+    warn: (...msg: (string | number)[]) => void
+    debug: (...msg: (string | number)[]) => void
+    error: (...msg: (string | number | Error)[]) => void
 }
 
 /**
