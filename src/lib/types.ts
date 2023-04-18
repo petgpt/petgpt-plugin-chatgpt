@@ -2,14 +2,11 @@
  * 定义插件有哪些功能
  */
 export interface IPetPluginInterface {
-    name: string
-    version: string
-    description: string
     register: () => void
     unregister: () => void
     config?: (ctx: PetExpose) => IPluginConfig[]
     slotMenu?: (ctx: PetExpose) => SlotMenu[]
-    handle: (data: PluginData) => Promise<IPluginHandlerResult> // 核心交互函数
+    handle: (data: PluginData) => Promise<void> // 核心交互函数
     stop: () => Promise<void> // 停止handle的执行
     [propName: string]: any
 }
@@ -35,6 +32,7 @@ export interface IEventBus {
     once(event: string | symbol, listener: Function): void
     listeners(event: string | symbol): Function[]
     removeAllListeners(event?: string | symbol): void
+    listenerCount(event: string | symbol): number
 }
 
 /**
@@ -122,9 +120,9 @@ export interface IPluginConfig {
 /**
  * 插件返回的结果
  */
-export interface IPluginHandlerResult {
-    id: string // 返回的id，用于update/insert信息
+export interface IPluginHandlerResult<T> {
+    id?: string // 返回的id，用于update/insert信息
     decode?: string // 可以直接返回解析好的html
-    success: boolean
-    body: string // 返回的数据，默认是string，如果是json，需要自己解析。文字、图片连接都是string
+    success: T
+    body: T extends true ? string[] : string // 返回的数据，默认是string，如果是json，需要自己解析。文字、图片连接都是string
 }
