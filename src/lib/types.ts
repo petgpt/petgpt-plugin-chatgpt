@@ -6,7 +6,7 @@ export interface IPetPluginInterface {
     unregister: () => void
     config?: (ctx: PetExpose) => IPluginConfig[]
     slotMenu?: (ctx: PetExpose) => SlotMenu[]
-    handle: (data: PluginData) => Promise<void> // 核心交互函数
+    handle: (data: PluginData, reload?: boolean) => Promise<void> // 核心交互函数
     stop: () => Promise<void> // 停止handle的执行
     [propName: string]: any
 }

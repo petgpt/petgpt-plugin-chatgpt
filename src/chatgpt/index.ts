@@ -160,6 +160,11 @@ async function chatReplyProcess(options: RequestOptions) {
     }
 }
 
+function getMsgStore() {
+    if(api instanceof ChatGPTUnofficialProxyAPI) throw new Error('getMsgStore is not supported in ChatGPTUnofficialProxyAPI')
+    return api.getMsgStore()
+}
+
 /**
  * 查询账号可用余额及有效期等信息
  */
@@ -276,4 +281,4 @@ function currentModel(): ApiModel {
 
 export type { ChatContext, ChatMessage }
 
-export { chatReplyProcess, chatConfig, currentModel }
+export { chatReplyProcess, chatConfig, currentModel, getMsgStore }

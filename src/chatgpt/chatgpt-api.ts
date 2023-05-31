@@ -494,4 +494,8 @@ export class ChatGPTAPI {
     ): Promise<void> {
         this._messageStore.set(message.id, message)
     }
+
+    public getMsgStore(): MessageStore {
+        return this._messageStore
+    }
 }

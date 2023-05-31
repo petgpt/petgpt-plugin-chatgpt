@@ -1,5 +1,5 @@
 import {PetExpose, IPetPluginInterface, PluginData, SlotMenu} from './lib/types.js'
-import {ChatMessage, chatReplyProcess, initApi, initEnv} from "./chatgpt/index.js";
+import {ChatMessage, chatReplyProcess, getMsgStore, initApi, initEnv} from "./chatgpt/index.js";
 import {openai} from "./chatgpt/types.js";
 import {Log} from "./lib/helper.js";
 
@@ -70,7 +70,24 @@ function bindEventListener(ctx: PetExpose) {
 
     if(!ctx.emitter.listenerCount(`plugin.${pluginName}.data`)) {
         // 监听发来的对话信息，调用chatgpt的api，获取回复
-        ctx.emitter.on(`plugin.${pluginName}.data`, (data: PluginData) => {
+        ctx.emitter.on(`plugin.${pluginName}.data`, (data: PluginData, reload: boolean = false) => {
+            let msgStore = getMsgStore();
+            if (reload) {
+                let parentMsg = msgStore.get(options.parentMessageId);
+                console.log(`options.parentMessageId ==> message:`, parentMsg)
+                if (parentMsg) {
+                    if (parentMsg.parentMessageId) {
+                        // grandParentMsg其实就是用户之前输入的msg
+                        let grandParentMsg = msgStore.get(parentMsg.parentMessageId)!;
+                        console.log(`${parentMsg.text}'s(id: ${options.parentMessageId}) parentMsg is:`, grandParentMsg)
+                        data.data = grandParentMsg.text
+
+                        // 重置parentMessageId，如果用户输入的为第一条，那么应该为''
+                        // 如果用户输入的不为第一条，那么应该为grandParentMsg的parentMessageId
+                        options.parentMessageId = grandParentMsg.parentMessageId ? grandParentMsg.parentMessageId : ''
+                    }
+                }
+            }
             chatReplyProcess({
                 message: data.data,
                 lastContext: options,
@@ -269,8 +286,8 @@ export default (ctx: PetExpose): IPetPluginInterface => {
         unregister,
         config,
         slotMenu,
-        handle: (data: PluginData) => new Promise(() => {
-            ctx.emitter.emit(`plugin.${pluginName}.data`, data) // 转发给自己的listener
+        handle: (data: PluginData, reload?: boolean) => new Promise(() => {
+            ctx.emitter.emit(`plugin.${pluginName}.data`, data, reload) // 转发给自己的listener
             log.debug('[handle]')
         }),
         stop: () => new Promise((resolve, _) => {
