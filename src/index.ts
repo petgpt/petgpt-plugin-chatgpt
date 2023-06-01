@@ -268,9 +268,12 @@ const slotMenu = (ctx: PetExpose): SlotMenu[] => [
 export default (ctx: PetExpose): IPetPluginInterface => {
     const register = () => {
         log = new Log(ctx)
-        initChatGPT(ctx)
         bindEventListener(ctx)
         log.debug(`[register]`)
+    }
+
+    const init = () => {
+        initChatGPT(ctx)
     }
 
     const unregister = () => {
@@ -284,6 +287,7 @@ export default (ctx: PetExpose): IPetPluginInterface => {
     return {
         register,
         unregister,
+        init,
         config,
         slotMenu,
         handle: (data: PluginData, reload?: boolean) => new Promise(() => {
