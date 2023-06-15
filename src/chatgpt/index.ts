@@ -91,6 +91,12 @@ export async function initApi(completionParams: Partial<Omit<openai.CreateChatCo
             }
         }
 
+        // 如果使用的16k的模型，修改maxModelTokens和maxResponseTokens
+        if (completionParams.model.toLowerCase().includes('16k')) {
+            options.maxModelTokens = 16384
+            options.maxResponseTokens = 4096
+        }
+
         if (isNotEmptyString(VITE_OPENAI_API_BASE_URL))
             options.apiBaseUrl = `${VITE_OPENAI_API_BASE_URL}/v1`
 
