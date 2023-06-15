@@ -1,6 +1,6 @@
 {
   "name": "petgpt-plugin-chatgpt",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "chatgpt plugin for petgpt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
