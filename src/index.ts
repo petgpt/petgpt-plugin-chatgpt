@@ -13,7 +13,7 @@ let enableChatContext = false;
 let systemMessage = `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\n`
 const pluginName = 'chatgpt'
 let completionParams: Partial<Omit<openai.CreateChatCompletionRequest, 'messages' | 'n' | 'stream'>> = {// 忽略了 message、n、stream 参数
-    model: 'gpt-3.5-turbo',
+    model: 'gpt-3.5-turbo-0613',
     max_tokens: 100, // 最大2048，gpt3模型中，一次对话最多生成的token数量
     temperature: 1, // [0, 2], 默认1, 更低更精确，更高随机性增加
     // top_p: 1, // 官方建议temperature与top_p不要一起使用
@@ -132,8 +132,9 @@ function bindEventListener(ctx: PetExpose) {
                         break;
                     }
                     case 'select': {
-                        // log.debug(`${i}, select value:`, slotData.value)
+                        log.debug(`${i}, select value:`, slotData.value)
                         ctx.db.set('selectTest', slotData.value)
+                        completionParams.model = slotData.value
                         break;
                     }
                     case 'uploda': {break;}
@@ -253,16 +254,17 @@ const slotMenu = (ctx: PetExpose): SlotMenu[] => [
     },
     {
         slot: 3,
-        name: 'selectTest',
+        name: '选择模型',
         menu: {
             type: 'select',
             child: [
-                {name: 'label1', value: 'value1', type: 'select', required: false},
-                {name: 'label2', value: 'value2', type: 'select', required: false},
+                {name: 'gpt3.5', value: 'gpt-3.5-turbo-0613', type: 'select', required: false},
+                {name: 'gpt3.5-16k', value: 'gpt-3.5-turbo-16k', type: 'select', required: false},
+                {name: 'gpt3.5-16k-0613', value: 'gpt-3.5-turbo-16k-0613', type: 'select', required: false},
             ],
-            value: ctx.db.get('selectTest') || 'value1' // 如果没有的话，默认选择第一个标签
+            value: ctx.db.get('selectTest') || 'gpt-3.5-turbo-0613' // 如果没有的话，默认选择第一个标签
         },
-        description: "selectTest"
+        description: "选择模型"
     }
 ]
 export default (ctx: PetExpose): IPetPluginInterface => {
