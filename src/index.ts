@@ -260,8 +260,7 @@ const slotMenu = (ctx: PetExpose): SlotMenu[] => [
             child: [
                 {name: 'gpt3.5', value: 'gpt-3.5-turbo-0613', type: 'select', required: false},
                 {name: 'gpt3.5-16k', value: 'gpt-3.5-turbo-16k', type: 'select', required: false},
-                {name: 'gpt3.5-16k-0613', value: 'gpt-3.5-turbo-16k-0613', type: 'select', required: false},
-                {name: 'text-davinci-003', value: 'text-davinci-003', type: 'select', required: false},
+                {name: 'gpt3.5-16k-0613', value: 'gpt-3.5-turbo-16k-0613', type: 'select', required: false}
             ],
             value: ctx.db.get('selectTest') || 'gpt-3.5-turbo-0613' // 如果没有的话，默认选择第一个标签
         },
